@@ -17,7 +17,7 @@ TARGET_WIDTH = 0.2 # width of the target zone (in metres, technically)
 POPULATION = 16 # the size of the population per generation
 GENERATIONS = 1000 # the number of generations to simulate
 HIT_BOOST = 0.0 # the amount the fitness is boosted by when it hits the target zone
-fitness_EXPONENT = 2 # the higher this value, the more drastic the change in fitness from the previous fitness; such that evolution occurs faster
+FITNESS_EXPONENT = 2 # the higher this value, the more drastic the change in fitness from the previous fitness; such that evolution occurs faster
 SPEED_RANGE = (5, 15) # random range for initial population
 ANGLE_RANGE = (0, 90) # ''
 RANDOM = True
@@ -106,7 +106,7 @@ class generation:
             fitness = float("{0:.4f}".format((target_x - abs(individual.distance() - target_x)) / target_x)) # it's possible to have a negative fitness if the distance from the target is huge
             if fitness < 0: # if it is negative
                 fitness = 0 # set to zero (see, using a negative probability seems slightly redundant, this therefore sets an lower bound on the fitness)
-            fitness = float("{0:.4f}".format(fitness**fitness_EXPONENT)) # prevents linear growth
+            fitness = float("{0:.4f}".format(fitness**FITNESS_EXPONENT)) # prevents linear growth
             if (individual.distance() > target_x - (TARGET_WIDTH / 2)) and (individual.distance() < target_x + (TARGET_WIDTH / 2)): # if it lands in the target
                 self.hits += 1 # increments number of hits
                 fitness += HIT_BOOST # if it hits the target, it is boosted by this amount in the probability weight
