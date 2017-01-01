@@ -16,8 +16,8 @@ MUTATION = 0.005 # percentage of mutation
 TARGET_WIDTH = 0.2 # width of the target zone (in metres, technically)
 POPULATION = 16 # the size of the population per generation
 GENERATIONS = 1000 # the number of generations to simulate
-HIT_BOOST = 0.0 # the amount the health is boosted by when it hits the target zone
-HEALTH_EXPONENT = 2 # the higher this value, the more drastic the change in fitness from the previous fitness; such that evolution occurs faster
+HIT_BOOST = 0.0 # the amount the fitness is boosted by when it hits the target zone
+fitness_EXPONENT = 2 # the higher this value, the more drastic the change in fitness from the previous fitness; such that evolution occurs faster
 SPEED_RANGE = (5, 15) # random range for initial population
 ANGLE_RANGE = (0, 90) # ''
 RANDOM = True
@@ -62,7 +62,7 @@ class path:
         # the trigonometric functions arent perfect, but its close enough for a 2d model
         self.initial_x = cos(radians(self.angle)) * self.speed # resolves from a speed to vector
         self.initial_y = sin(radians(self.angle)) * self.speed # ''
-        self.health = 0 # initial health of 0
+        self.fitness = 0 # initial fitness of 0
     def position(self, time):
         global GRAVITY # uses gravity from config
         return (self.initial_x * time, time * (self.initial_y - ((GRAVITY * time) / 2))) # trust me, this equation works
@@ -72,11 +72,11 @@ class path:
 class generation:
     def __init__(self):
         self.population = list() # list of the entire population
-        self.health = dict() # stores population with health (this is very inefficient, but it was useful when testing)
-        self.sorted_health = list() # sorts the population by health
+        self.fitness = dict() # stores population with fitness (this is very inefficient, but it was useful when testing)
+        self.sorted_fitness = list() # sorts the population by fitness
         self.probability = dict() # remaps probability
         self.hits = 0 # the number of hits in this generation
-        self.average = 0 # the average health
+        self.average = 0 # the average fitness
     def simulate(self, c=(0, 0, 0)):
         if c == (0, 0, 0): # if the colour is black
             clear() # clears the screen
@@ -89,7 +89,7 @@ class generation:
         draw_line(horizontal_bounds[0], vertical_bounds[1], horizontal_bounds[1], vertical_bounds[1]) # ''
         draw_line(horizontal_bounds[1], vertical_bounds[0], horizontal_bounds[1], vertical_bounds[1]) # ''
         draw_line(horizontal_bounds[0], vertical_bounds[0], horizontal_bounds[0], vertical_bounds[1]) # ''
-        total_health = 0 # sets total health, used later
+        total_fitness = 0 # sets total fitness, used later
         color(c) # sets colour to the specified value
         for individual in self.population: # each item in population
             last_point = (0, 0) # starts at origin
@@ -103,24 +103,24 @@ class generation:
                     break # exit
                 if new_point[0] > (WIDTH - (2 * MARGIN)) / SCALE: # of it exits the bounds
                     break # exit
-            health = float("{0:.4f}".format((target_x - abs(individual.distance() - target_x)) / target_x)) # it's possible to have a negative health if the distance from the target is huge
-            if health < 0: # if it is negative
-                health = 0 # set to zero (see, using a negative probability seems slightly redundant, this therefore sets an lower bound on the health)
-            health = float("{0:.4f}".format(health**HEALTH_EXPONENT)) # prevents linear growth
+            fitness = float("{0:.4f}".format((target_x - abs(individual.distance() - target_x)) / target_x)) # it's possible to have a negative fitness if the distance from the target is huge
+            if fitness < 0: # if it is negative
+                fitness = 0 # set to zero (see, using a negative probability seems slightly redundant, this therefore sets an lower bound on the fitness)
+            fitness = float("{0:.4f}".format(fitness**fitness_EXPONENT)) # prevents linear growth
             if (individual.distance() > target_x - (TARGET_WIDTH / 2)) and (individual.distance() < target_x + (TARGET_WIDTH / 2)): # if it lands in the target
                 self.hits += 1 # increments number of hits
-                health += HIT_BOOST # if it hits the target, it is boosted by this amount in the probability weight
+                fitness += HIT_BOOST # if it hits the target, it is boosted by this amount in the probability weight
                 self.average -= HIT_BOOST # removes from average, as the hit boost is only used for probability
-            total_health += health # increment total health
-            self.average += health # increment average
-            self.health[health] = individual; # sets the dictionary
-            individual.health = health # sets the health value
+            total_fitness += fitness # increment total fitness
+            self.average += fitness # increment average
+            self.fitness[fitness] = individual; # sets the dictionary
+            individual.fitness = fitness # sets the fitness value
         last_probability = 0 # last probability; we use a cumulative system in order to set boundaries
         self.average /= len(self.population) # divides by the population length to get a meme
-        for individual in sorted(self.health.keys(), reverse=True): # sorts with highest first
-            self.sorted_health.append(self.health[individual]) # adds into list
-            next_probability = last_probability + (individual / total_health) # maps it to get a total of 1
-            self.probability[next_probability] = self.health[individual] # sets value
+        for individual in sorted(self.fitness.keys(), reverse=True): # sorts with highest first
+            self.sorted_fitness.append(self.fitness[individual]) # adds into list
+            next_probability = last_probability + (individual / total_fitness) # maps it to get a total of 1
+            self.probability[next_probability] = self.fitness[individual] # sets value
             last_probability = next_probability # resets previous probability
     def pick(self):
         upper_bounds = sorted(self.probability.keys(), reverse=True) # gets a list of upper bounds, highest first
@@ -158,10 +158,10 @@ for generation_number in range(0, GENERATIONS): # does this per generation
     #c = fade((255, 255, 255), (1, 1, 1), generation_number / (GENERATIONS - 1)) # colour fading to show evolution
     #last_generation.simulate(c) # draws with colour
     last_generation.simulate() # simulates without colour
-    print("Average health of generation [", str(generation_number), "]:", "{0:.4f}".format(last_generation.average), "(", str(last_generation.hits), ("hits" if not last_generation.hits == 1 else "hit") , ")") # shows generation stats
+    print("Average fitness of generation [", str(generation_number), "]:", "{0:.4f}".format(last_generation.average), "(", str(last_generation.hits), ("hits" if not last_generation.hits == 1 else "hit") , ")") # shows generation stats
     print("    Best: [",
-          "Speed:", "{0:.4f}".format(last_generation.sorted_health[0].speed), ",",
-          "Angle:", "{0:.4f}".format(last_generation.sorted_health[0].angle), ",",
-          "Health:", "{0:.4f}".format((last_generation.sorted_health[0].health) if (last_generation.sorted_health[0].health <= 1) else (last_generation.sorted_health[0].health - HIT_BOOST)),
+          "Speed:", "{0:.4f}".format(last_generation.sorted_fitness[0].speed), ",",
+          "Angle:", "{0:.4f}".format(last_generation.sorted_fitness[0].angle), ",",
+          "fitness:", "{0:.4f}".format((last_generation.sorted_fitness[0].fitness) if (last_generation.sorted_fitness[0].fitness <= 1) else (last_generation.sorted_fitness[0].fitness - HIT_BOOST)),
           "]")
     last_generation = last_generation.reproduce() # reproduces
