@@ -113,7 +113,7 @@ class generation:
             self.health[health] = individual; # sets the dictionary
             individual.health = health # sets the health value
         last_probability = 0 # last probability; we use a cumulative system in order to set boundaries
-        self.average /= len(self.population) # divides by the population length to get a meme
+        self.average /= len(self.population) # divides by the population length to get a mean
         for individual in sorted(self.health.keys(), reverse=True): # sorts with highest first
             self.sorted_health.append(self.health[individual]) # adds into list
             next_probability = last_probability + (individual / total_health) # maps it to get a total of 1
