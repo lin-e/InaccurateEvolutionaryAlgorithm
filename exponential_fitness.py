@@ -116,7 +116,7 @@ class generation:
             self.fitness[fitness] = individual; # sets the dictionary
             individual.fitness = fitness # sets the fitness value
         last_probability = 0 # last probability; we use a cumulative system in order to set boundaries
-        self.average /= len(self.population) # divides by the population length to get a meme
+        self.average /= len(self.population) # divides by the population length to get a mean
         for individual in sorted(self.fitness.keys(), reverse=True): # sorts with highest first
             self.sorted_fitness.append(self.fitness[individual]) # adds into list
             next_probability = last_probability + (individual / total_fitness) # maps it to get a total of 1
