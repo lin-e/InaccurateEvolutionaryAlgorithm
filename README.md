@@ -14,7 +14,7 @@ We can work out the optimal speed, through the following;
 v = sqrt((sin(a)cos(a)u^2)/(sin(b)cos(b)))
 
 # Credit
-- [Daniel Shiffman] (http://natureofcode.com/) His tutorials introduced me to the basics of genetic algorithms.
+- [Daniel Shiffman](http://natureofcode.com/) His tutorials introduced me to the basics of genetic algorithms.
 
 # Versions
 ## main.py
